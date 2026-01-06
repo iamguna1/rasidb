@@ -1,0 +1,5 @@
+{
+  "name": "Legal & Financial Data Extractor",
+  "description": "A specialized tool for extracting specific loan, property, and recovery data from legal documents using Gemini AI, with Excel export functionality.",
+  "requestFramePermissions": []
+}
