@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Download, AlertCircle, FileEdit } from 'lucide-react';
+import React, { useState } from 'react';
+import { Download, AlertCircle, FileEdit, Copy, CheckCircle2 } from 'lucide-react';
 import { ExtractionResult, FileData } from '../types';
 import { exportToExcel } from '../utils/excel';
 import { generatePopulatedDocx } from '../utils/docx';
@@ -12,6 +12,8 @@ interface ExtractionResultsProps {
 }
 
 const ExtractionResults: React.FC<ExtractionResultsProps> = ({ result, setResult, templateFile }) => {
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
   const handleValueChange = (index: number, newValue: string) => {
     const updatedFields = [...result.fields];
     updatedFields[index].value = newValue;
@@ -28,15 +30,24 @@ const ExtractionResults: React.FC<ExtractionResultsProps> = ({ result, setResult
     }
   };
 
+  const copyToClipboard = (text: string, index: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h2 className="text-xl font-bold text-gray-900">Extraction Results</h2>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">Extraction Results</h2>
+          <p className="text-xs text-gray-500 font-medium">Verified using Gemini 3 Flash Intelligence</p>
+        </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           {templateFile && (
             <button
               onClick={handleWordExport}
-              className="flex items-center justify-center gap-2 px-4 py-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
+              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg font-bold text-sm"
             >
               <FileEdit className="w-4 h-4" />
               Generate Word Doc
@@ -44,7 +55,7 @@ const ExtractionResults: React.FC<ExtractionResultsProps> = ({ result, setResult
           )}
           <button
             onClick={() => exportToExcel(result)}
-            className="flex items-center justify-center gap-2 px-4 py-3 sm:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm font-medium"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-md hover:shadow-lg font-bold text-sm"
           >
             <Download className="w-4 h-4" />
             Excel Export
@@ -52,31 +63,44 @@ const ExtractionResults: React.FC<ExtractionResultsProps> = ({ result, setResult
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="min-w-full divide-y divide-gray-100">
+            <thead className="bg-gray-50/50">
               <tr>
-                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">#</th>
-                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Field Name</th>
-                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Extracted Value</th>
+                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest w-16">ID</th>
+                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Field Attribute</th>
+                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Value & Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-50">
               {result.fields.map((field, idx) => (
-                <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">{field.id}</td>
-                  <td className="px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium text-gray-900 break-words max-w-[120px] sm:max-w-none">
+                <tr key={idx} className="group hover:bg-indigo-50/30 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-400">{field.id}</td>
+                  <td className="px-6 py-4 text-xs sm:text-sm font-bold text-gray-700">
                     {field.fieldName}
                   </td>
-                  <td className="px-4 sm:px-6 py-4">
-                    <input
-                      type="text"
-                      value={field.value}
-                      onChange={(e) => handleValueChange(idx, e.target.value)}
-                      className="w-full bg-gray-50 border border-transparent focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 rounded px-2 py-2 text-xs sm:text-sm text-gray-700 outline-none transition-all"
-                      placeholder="N/A"
-                    />
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={field.value}
+                        onChange={(e) => handleValueChange(idx, e.target.value)}
+                        className="flex-grow bg-gray-50/50 border border-gray-100 focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 rounded-lg px-3 py-2 text-xs sm:text-sm text-gray-800 outline-none transition-all font-medium"
+                        placeholder="Not found in document"
+                      />
+                      <button 
+                        onClick={() => copyToClipboard(field.value, idx)}
+                        className={`p-2 rounded-lg transition-all ${
+                          copiedIndex === idx 
+                          ? 'text-emerald-500 bg-emerald-50 scale-110' 
+                          : 'text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 opacity-0 group-hover:opacity-100'
+                        }`}
+                        title="Copy to clipboard"
+                      >
+                        {copiedIndex === idx ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -85,34 +109,52 @@ const ExtractionResults: React.FC<ExtractionResultsProps> = ({ result, setResult
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-sm sm:text-md font-semibold text-gray-800 mb-3">Immovable Property Description</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Immovable Property</h3>
+            <button 
+              onClick={() => copyToClipboard(result.immovablePropertyDescription, 999)}
+              className="text-indigo-500 hover:text-indigo-700 font-bold text-[10px] uppercase flex items-center gap-1"
+            >
+              {copiedIndex === 999 ? 'Copied!' : <><Copy className="w-3 h-3"/> Copy Text</>}
+            </button>
+          </div>
           <textarea
             value={result.immovablePropertyDescription}
             onChange={(e) => handleExtraChange('immovablePropertyDescription', e.target.value)}
-            className="w-full h-40 sm:h-48 p-3 text-xs sm:text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none leading-relaxed"
+            className="w-full h-48 p-4 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 outline-none resize-none leading-relaxed text-slate-700 font-medium"
             placeholder="No description extracted..."
           />
         </div>
-        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-sm sm:text-md font-semibold text-gray-800 mb-3">Applicants & Co-Borrowers</h3>
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Applicants & Co-Borrowers</h3>
+            <button 
+              onClick={() => copyToClipboard(result.applicantsAndCoBorrowers, 1000)}
+              className="text-indigo-500 hover:text-indigo-700 font-bold text-[10px] uppercase flex items-center gap-1"
+            >
+              {copiedIndex === 1000 ? 'Copied!' : <><Copy className="w-3 h-3"/> Copy Text</>}
+            </button>
+          </div>
           <textarea
             value={result.applicantsAndCoBorrowers}
             onChange={(e) => handleExtraChange('applicantsAndCoBorrowers', e.target.value)}
-            className="w-full h-40 sm:h-48 p-3 text-xs sm:text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none leading-relaxed"
+            className="w-full h-48 p-4 text-sm bg-slate-50 border border-slate-100 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 outline-none resize-none leading-relaxed text-slate-700 font-medium"
             placeholder="No borrower details extracted..."
           />
         </div>
       </div>
       
-      <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4 flex gap-3">
-        <AlertCircle className="w-5 h-5 text-indigo-500 flex-shrink-0" />
-        <p className="text-xs sm:text-sm text-indigo-700">
-          {templateFile 
-            ? "Template loaded! Click 'Generate Word Doc' to populate your placeholders." 
-            : "Review values above. Edits are saved in real-time and reflected in the Excel export."}
-        </p>
+      <div className="bg-indigo-600 rounded-2xl p-5 text-white flex items-start gap-4 shadow-xl shadow-indigo-100">
+        <CheckCircle2 className="w-6 h-6 text-indigo-200 flex-shrink-0" />
+        <div>
+          <h4 className="font-bold text-sm mb-1">Extraction Complete</h4>
+          <p className="text-xs text-indigo-100 leading-relaxed">
+            Data has been mapped and normalized. You can manually correct any fields before exporting. 
+            If a Word template is uploaded, click <b>Generate Word Doc</b> to perform a Mail Merge.
+          </p>
+        </div>
       </div>
     </div>
   );

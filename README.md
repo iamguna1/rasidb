@@ -1,20 +1,32 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
 
-# Run and deploy your AI Studio app
+# Legal & Financial Data Extractor (Web-Native)
 
-This contains everything you need to run your app locally.
+A professional-grade tool for extracting structured data from legal and financial documents using **Gemini 3 Pro Vision Intelligence**.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1bBvD3oofePOOPlGlfXtiJyDABAr1POT2
+## 🚀 Quick Start
+This project uses a **Web-Native React** architecture (no local build tools required for development).
 
-## Run Locally
+1. Clone the repository.
+2. Serve the directory using any static server:
+   ```bash
+   npx serve .
+   ```
+3. Open `http://localhost:3000` in your browser.
 
-**Prerequisites:**  Node.js
+## 📦 Deployment
+Because this app uses an `importmap` in `index.html`, you do not need to run `npm run build` to generate a `dist` or `build/web` folder. 
 
+**To Deploy:**
+1. Simply push all files in the root directory to your host (GitHub Pages, Netlify, Vercel).
+2. Ensure your host serves `index.html` as the entry point.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🛠 Tech Stack
+- **React 19**: Modern UI rendering.
+- **Tailwind CSS**: Rapid utility-first styling.
+- **Gemini 3 Pro**: Advanced document reasoning and OCR.
+- **Mail Merge**: Client-side `.docx` generation via `docxtemplater`.
+
+## ⚠️ Note for Flutter Users
+If you are coming from a Flutter background, please note:
+- **No `build/web` folder**: Web-native apps serve source files directly or use a `dist` folder if bundled.
+- **Standard Git workflow**: Use `git add .` to track all project files.
